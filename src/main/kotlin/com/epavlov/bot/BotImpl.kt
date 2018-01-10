@@ -3,10 +3,8 @@ package com.epavlov.bot
 import com.epavlov.PropReader
 import com.epavlov.repository.UserRepository
 import kotlinx.coroutines.experimental.async
-import kotlinx.coroutines.experimental.launch
 import org.apache.log4j.LogManager
 import org.telegram.telegrambots.api.methods.send.SendMessage
-import org.telegram.telegrambots.api.methods.send.SendPhoto
 import org.telegram.telegrambots.api.methods.send.SendSticker
 import org.telegram.telegrambots.api.objects.Update
 import org.telegram.telegrambots.bots.TelegramLongPollingBot
@@ -18,6 +16,7 @@ class BotImpl : TelegramLongPollingBot(){
                 .split(",")
                 .forEach { it-> sendMessage(SendMessage(it,"____ STARTED ____")) }
     }
+
     override fun getBotToken(): String {
        return PropReader.getProperty("bot.token").toString()
     }
@@ -44,7 +43,7 @@ class BotImpl : TelegramLongPollingBot(){
     fun parseTextMessage(userId:Long, message:String){
        async {
            val user= UserRepository.getUser(userId)
-           sendMessage(SendMessage(userId,user!!.fio))
+           sendMessage(SendMessage(userId,user?.fio))
        }
     }
     fun SendStickertoUser(id:Int, s:String){

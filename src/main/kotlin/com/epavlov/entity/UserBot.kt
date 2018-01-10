@@ -4,7 +4,6 @@ import java.util.*
 
 
 class UserBot {
-
     var id: Long? = null
     var user_name: String? = null
     var createdTime: String? = null
@@ -14,7 +13,7 @@ class UserBot {
     var lastMessageTime: String? = null
 
     val fio: String? by lazy{
-        return@lazy "${first_name ?: ""} ${user_name ?: ""} ${last_name ?: ""}".replace("  "," ")
+        return@lazy "${first_name ?: ""} ${user_name ?: ""} ${last_name ?: ""}".trim().plus(" @$id").replace("  "," ")
     }
     var trackList: HashMap<String, UserTrack> = HashMap()
 
@@ -26,6 +25,4 @@ class UserBot {
     override fun toString(): String {
         return "UserBot(id=$id, user_name=$user_name, createdTime=$createdTime, first_name=$first_name, last_name=$last_name, isActive=$isActive, lastMessageTime=$lastMessageTime, trackList=$trackList)"
     }
-
-
 }
