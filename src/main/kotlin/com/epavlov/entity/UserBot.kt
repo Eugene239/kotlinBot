@@ -14,7 +14,7 @@ class UserBot {
     var lastMessageTime: String? = null
 
     val fio: String? by lazy{
-        return@lazy "${first_name!!} ${user_name!!} ${last_name!!}"
+        return@lazy "${first_name ?: ""} ${user_name ?: ""} ${last_name ?: ""}".replace("  "," ")
     }
     var trackList: HashMap<String, UserTrack> = HashMap()
 
