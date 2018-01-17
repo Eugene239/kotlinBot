@@ -1,17 +1,20 @@
 package com.epavlov.bot
 
 import com.epavlov.PropReader
+import com.epavlov.commands.CommandParser
+import com.epavlov.dao.UserDAO
 import com.epavlov.entity.UserBot
-import com.epavlov.repository.UserRepository
 import com.epavlov.wrapper.StringWrapper
 import kotlinx.coroutines.experimental.async
+import kotlinx.coroutines.experimental.delay
 import org.apache.log4j.LogManager
 import org.telegram.telegrambots.api.methods.send.SendMessage
 import org.telegram.telegrambots.api.methods.send.SendSticker
+import org.telegram.telegrambots.api.objects.Message
 import org.telegram.telegrambots.api.objects.Update
 import org.telegram.telegrambots.bots.TelegramLongPollingBot
 
-class BotImpl : TelegramLongPollingBot() {
+object BotImpl : TelegramLongPollingBot() {
     private val log = LogManager.getLogger(BotImpl::class.java)
 
     init {
@@ -29,30 +32,29 @@ class BotImpl : TelegramLongPollingBot() {
     }
 
     override fun onUpdateReceived(p0: Update?) {
+        //checking user in db, if it doesn't contains it, save it
+        p0?.message?.from?.let { UserDAO.checkUser(it) }
+
         p0?.message?.text?.let {
             log.debug("[MESSAGE] ${p0.message.from.id}: ${p0.message.text}")
-            parseTextMessage(p0.message.from.id.toLong(), p0.message.text)
+            parseTextMessage(p0.message.from.id.toLong(), p0.message)
         }
         p0?.message?.sticker?.let {
             log.debug("[STICKER] ${p0.message.from.id}: ${p0.message.sticker.emoji} ${p0.message.sticker.fileId}")
         }
         p0?.callbackQuery?.let {
-            log.debug("[CALLBACK] ${p0.callbackQuery?.from}: ${p0.callbackQuery?.data}")
+            log.debug("[CALLBACK] ${p0.callbackQuery?.from}:  ${p0.callbackQuery.data}")
+            CommandParser.parseCommand(p0.callbackQuery)
         }
-
-        //sticker.setSticker()
-        //sendSticker()
-
     }
 
-    fun parseTextMessage(userId: Long, message: String) {
+    fun parseTextMessage(userId: Long, message: Message) {
         async {
             log.debug("asyncTask threadsCount: ${Thread.activeCount()}")
-            val user:UserBot? = UserRepository.getUser(userId)
-            user?.let {
-                //checking is it command, then parse command
-                if (isCommand(user, message)) return@async
-            }
+            val user: UserBot? = UserDAO.get(userId)
+            //checking is it command, then parse command
+            if (isDefaultCommand(user, message)) return@async
+
         }
     }
 
@@ -63,17 +65,30 @@ class BotImpl : TelegramLongPollingBot() {
         sendSticker(sticker)
     }
 
-    private fun isCommand(user:UserBot, msg:String): Boolean{
+    private fun isDefaultCommand(user: UserBot?, msg: Message): Boolean {
         var out = true
-        when(msg.toLowerCase().trim()){
-            "/mylist"-> {
-                sendMessage(StringWrapper.wrapUserTrackList(user))
+        when (msg.text.toLowerCase().trim()) {
+            "/mylist" -> {
+                user?.let {
+                    sendMessageToUser(user, StringWrapper.wrapUserTrackList(user))
+                }
             }
-            else->{
-                out=false
+            "/start" -> {
+
+            }
+            else -> {
+                out = false
             }
         }
         return out
+    }
+
+    fun sendMessageToUser(user: UserBot, send: SendMessage) {
+        try {
+            sendMessage(send)
+        } catch (e: Exception) {
+            log.error(e.message, e)
+        }
     }
 
 }

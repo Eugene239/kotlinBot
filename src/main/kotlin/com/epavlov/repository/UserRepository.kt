@@ -13,48 +13,53 @@ object UserRepository {
      * return user from db
      * return null if not found user
      */
-    suspend fun getUser(userId:Long): UserBot?{
-         return suspendCoroutine { continuation ->
-             run {
-                 Repository.db.getReference("${UserBot.PATH}/$userId").addListenerForSingleValueEvent(object : ValueEventListener {
-                     override fun onCancelled(p0: DatabaseError?) {
-                         log.error(p0?.message,p0?.toException())
-                         continuation.resumeWithException(p0!!.toException())
-                     }
+    suspend fun getUser(userId: Long): UserBot? {
+        log.debug("getUser: $userId")
+        return suspendCoroutine {
+            Repository.db.getReference("${UserBot.PATH}/$userId").addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onCancelled(p0: DatabaseError?) {
+                    log.error(p0?.message, p0?.toException())
+                    it.resumeWithException(p0!!.toException())
+                }
 
-                     override fun onDataChange(p0: DataSnapshot?) {
-                         continuation.resume(p0!!.getValue(UserBot::class.java))
-                         continuation.resume(null)
-                     }
-                 })
-             }
-         }
-    }
-    suspend fun getList():List<UserBot>{
-        return suspendCoroutine { continuation ->
-            run{
-                val list : ArrayList<UserBot> = ArrayList()
-                Repository.db.getReference(UserBot.PATH).addListenerForSingleValueEvent(object :ValueEventListener{
-                    override fun onCancelled(p0: DatabaseError?) {
-                        log.error(p0?.message,p0?.toException())
-                        continuation.resume(list)
+                override fun onDataChange(p0: DataSnapshot?) {
+                    log.debug("loaded: ${p0.toString()}")
+                    try {
+                        val user: UserBot? = p0?.getValue(UserBot::class.java)
+                        it.resume(user)
+                    } catch (e: Exception) {
+                        log.error(e.message, e)
+                        it.resume(null)
                     }
-                    override fun onDataChange(p0: DataSnapshot?) {
-                         p0?.children?.forEach { it->
-                             try{
-                                 val user:UserBot = it.getValue(UserBot::class.java)
-                                 list.add(user)
-                             }catch (e:Exception){
-                                 log.error(e.message,e)
-                             }
-                         }
-                        continuation.resume(list)
-                    }
-
-                })
-
-            }
+                }
+            })
         }
     }
 
+    suspend fun getList(): List<UserBot> {
+        return suspendCoroutine {
+            val list: ArrayList<UserBot> = ArrayList()
+            Repository.db.getReference(UserBot.PATH).addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onCancelled(p0: DatabaseError?) {
+                    log.error(p0?.message, p0?.toException())
+                    it.resume(list)
+                }
+                override fun onDataChange(p0: DataSnapshot?) {
+                    p0?.children?.forEach { it ->
+                        try {
+                            val user: UserBot = it.getValue(UserBot::class.java)
+                            list.add(user)
+                        } catch (e: Exception) {
+                            log.error(e.message, e)
+                        }
+                    }
+                    it.resume(list)
+                }
+            })
+        }
+    }
+
+    fun save(user: UserBot) {
+        Repository.db.getReference("${UserBot.PATH}/${user.id}").setValue(user)
+    }
 }

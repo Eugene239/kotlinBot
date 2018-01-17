@@ -15,12 +15,12 @@ class Track {
     var users = HashMap<String, Long>()
 
 
-    fun consume(track: Track) {
+ /*   fun consume(track: Track) {
         text = track.text
         time = track.time
         parserCode = track.parserCode
         status = track.status
-    }
+    }*/
 
     override fun toString(): String {
         return "Track(id=$id, status=$status, parserCode=$parserCode, text=$text, last_modify=$last_modify, last_check=$last_check, time=$time, users=$users)"
