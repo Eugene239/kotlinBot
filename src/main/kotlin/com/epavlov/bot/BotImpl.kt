@@ -21,7 +21,7 @@ import org.telegram.telegrambots.bots.TelegramLongPollingBot
  *  -   delete track
  *  -   getTrackID
  *  -   schedule
- *  -   /help
+ *     /help
  */
 object BotImpl : TelegramLongPollingBot() {
     private val log = LogManager.getLogger(BotImpl::class.java)

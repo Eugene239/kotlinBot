@@ -15,6 +15,7 @@
         <kotlin.version>1.2.10</kotlin.version>
         <kotlin.coroutines>0.21.2</kotlin.coroutines>
         <bot.version>3.5</bot.version>
+        <okhttp>2.7.5</okhttp>
     </properties>
 
     <dependencies>
@@ -28,12 +29,13 @@
             <artifactId>kotlinx-coroutines-core</artifactId>
             <version>${kotlin.coroutines}</version>
         </dependency>
-        <!-- https://mvnrepository.com/artifact/org.jetbrains.kotlinx/kotlinx-coroutines-jdk8 -->
-        <!--<dependency>-->
-            <!--<groupId>org.jetbrains.kotlinx</groupId>-->
-            <!--<artifactId>kotlinx-coroutines-jdk8</artifactId>-->
-            <!--<version>${kotlin.coroutines}</version>-->
-        <!--</dependency>-->
+        <!-- https://mvnrepository.com/artifact/com.squareup.okhttp/okhttp -->
+        <dependency>
+            <groupId>com.squareup.okhttp</groupId>
+            <artifactId>okhttp</artifactId>
+            <version>${okhttp}</version>
+        </dependency>
+
         <dependency>
             <groupId>com.google.firebase</groupId>
             <artifactId>firebase-admin</artifactId>
