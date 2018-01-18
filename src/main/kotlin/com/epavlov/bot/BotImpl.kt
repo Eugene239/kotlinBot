@@ -6,7 +6,6 @@ import com.epavlov.dao.UserDAO
 import com.epavlov.entity.UserBot
 import com.epavlov.wrapper.StringWrapper
 import kotlinx.coroutines.experimental.async
-import kotlinx.coroutines.experimental.delay
 import org.apache.log4j.LogManager
 import org.telegram.telegrambots.api.methods.send.SendMessage
 import org.telegram.telegrambots.api.methods.send.SendSticker
@@ -14,21 +13,31 @@ import org.telegram.telegrambots.api.objects.Message
 import org.telegram.telegrambots.api.objects.Update
 import org.telegram.telegrambots.bots.TelegramLongPollingBot
 
+/**
+ * todo 18.01.2018
+ *  -   add parsers
+ *      /start
+ *  -   add/delete info
+ *  -   delete track
+ *  -   getTrackID
+ *  -   schedule
+ *  -   /help
+ */
 object BotImpl : TelegramLongPollingBot() {
     private val log = LogManager.getLogger(BotImpl::class.java)
 
     init {
-        PropReader.getProperty("admins").toString()
+        PropReader.getProperty("admins")
                 .split(",")
                 .forEach { it -> sendMessage(SendMessage(it, "____ STARTED ____")) }
     }
 
     override fun getBotToken(): String {
-        return PropReader.getProperty("bot.token").toString()
+        return PropReader.getProperty("bot.token")
     }
 
     override fun getBotUsername(): String {
-        return PropReader.getProperty("bot.name").toString()
+        return PropReader.getProperty("bot.name")
     }
 
     override fun onUpdateReceived(p0: Update?) {
@@ -53,19 +62,19 @@ object BotImpl : TelegramLongPollingBot() {
             log.debug("asyncTask threadsCount: ${Thread.activeCount()}")
             val user: UserBot? = UserDAO.get(userId)
             //checking is it command, then parse command
-            if (isDefaultCommand(user, message)) return@async
+            if (isDefaultCommand(userId, user, message)) return@async
 
         }
     }
 
-    fun SendStickertoUser(id: Int, s: String) {
+    fun sendStickertoUser(id: Long?, s: String) {
         val sticker = SendSticker()
-        sticker.setChatId(id.toLong())
+        sticker.setChatId(id)
         sticker.sticker = s
         sendSticker(sticker)
     }
 
-    private fun isDefaultCommand(user: UserBot?, msg: Message): Boolean {
+    private fun isDefaultCommand(id:Long, user: UserBot?, msg: Message): Boolean {
         var out = true
         when (msg.text.toLowerCase().trim()) {
             "/mylist" -> {
@@ -74,7 +83,7 @@ object BotImpl : TelegramLongPollingBot() {
                 }
             }
             "/start" -> {
-
+                   greeting(id)
             }
             else -> {
                 out = false
@@ -87,8 +96,23 @@ object BotImpl : TelegramLongPollingBot() {
         try {
             sendMessage(send)
         } catch (e: Exception) {
-            log.error(e.message, e)
+            log.error(user, e)
         }
+    }
+    private fun sendMessageToUser(send: SendMessage) {
+        try {
+            sendMessage(send)
+        } catch (e: Exception) {
+            log.error(send.chatId, e)
+        }
+    }
+
+    fun greeting(id : Long){
+        val sticker :String= PropReader.getProperty("greeting.sticker")
+        if (sticker.isNotEmpty()){
+            sendStickertoUser(id,sticker)
+        }
+        sendMessageToUser(SendMessage(id,PropReader.getProperty("greeting")))
     }
 
 }

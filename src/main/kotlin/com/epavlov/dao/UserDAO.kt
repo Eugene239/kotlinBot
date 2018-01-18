@@ -4,7 +4,6 @@ import com.epavlov.entity.UserBot
 import com.epavlov.repository.UserRepository
 import kotlinx.coroutines.experimental.Deferred
 import kotlinx.coroutines.experimental.async
-import kotlinx.coroutines.experimental.launch
 import org.apache.log4j.LogManager
 import org.telegram.telegrambots.api.objects.User
 import java.time.LocalDateTime
@@ -13,7 +12,7 @@ object UserDAO{
 
     private val log = LogManager.getLogger(UserDAO::class.java)
     fun checkUser(userTelegram: User){
-        launch {
+        async {
             val userBot: UserBot? = UserRepository.getUser(userTelegram.id.toLong())
             if (userBot == null) {
                 val newUser = UserBot(userTelegram)

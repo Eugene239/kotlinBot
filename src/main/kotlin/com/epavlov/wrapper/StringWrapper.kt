@@ -18,16 +18,21 @@ object StringWrapper {
 
     fun wrapUserTrackList(userBot: UserBot): SendMessage {
         val out = SendMessage()
-        out.text = PropReader.getProperty("yourTracks").toString()
         out.setChatId(userBot.id)
-        val keyboardMarkup = InlineKeyboardMarkup()
-        userBot.trackList.forEach({ id, track ->
-            val list = ArrayList<InlineKeyboardButton>()
-            val button = InlineKeyboardButton().setText(track.toKeyBoardText()).setCallbackData("${Command.GET_TRACK}#$id")
-            list.add(button)
-            keyboardMarkup.keyboard.add(list)
-        })
-        out.replyMarkup = keyboardMarkup
+        if (userBot.trackList.isNotEmpty()) {
+            val keyboardMarkup = InlineKeyboardMarkup()
+            userBot.trackList.forEach({ id, track ->
+                val list = ArrayList<InlineKeyboardButton>()
+                val button = InlineKeyboardButton().setText(track.toKeyBoardText()).setCallbackData("${Command.GET_TRACK}#$id")
+                list.add(button)
+                keyboardMarkup.keyboard.add(list)
+            })
+            out.replyMarkup = keyboardMarkup
+            out.text = PropReader.getProperty("yourTracks")
+        }else {
+            //user don't have tracks
+            out.text=PropReader.getProperty("yourTracks.empty")
+        }
         return out
     }
 
@@ -35,7 +40,7 @@ object StringWrapper {
         userBot?.let {
             track?.let {
                 log.debug("wrapUserTrack $userBot $track")
-                val send = SendMessage(userBot.id, getTextMessage(userBot,track))
+                val send = SendMessage(userBot.id, getTextMessage(userBot, track))
                 BotImpl.sendMessageToUser(userBot, send)
             }
         }
@@ -44,9 +49,9 @@ object StringWrapper {
     /**
      * get Text track to User
      */
-    private fun getTextMessage(userBot: UserBot, track: Track):String{
-        val name : String=userBot.trackList[track.id]?.name?:""
-        if (!name.isEmpty()){
+    private fun getTextMessage(userBot: UserBot, track: Track): String {
+        val name: String = userBot.trackList[track.id]?.name ?: ""
+        if (!name.isEmpty()) {
             return "${track.id}\n\n" +
                     "${userBot.trackList[track.id]?.name}\n\n" +
                     "Статус: ${track.status ?: ""}\n\n" +

@@ -10,7 +10,7 @@ import java.io.IOException
 object Repository {
     init {
         val serviceAccount = javaClass.classLoader.getResourceAsStream("google-services.json")
-        val databaseUrl: String = PropReader.getProperty("database").toString()
+        val databaseUrl: String = PropReader.getProperty("database")
         try {
             val options = FirebaseOptions.Builder()
                     .setCredential(FirebaseCredentials.fromCertificate(serviceAccount))
