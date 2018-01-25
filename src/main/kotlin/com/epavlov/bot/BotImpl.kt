@@ -4,6 +4,7 @@ import com.epavlov.PropReader
 import com.epavlov.commands.CommandParser
 import com.epavlov.dao.UserDAO
 import com.epavlov.entity.UserBot
+import com.epavlov.parsers.MainParser
 import com.epavlov.wrapper.StringWrapper
 import kotlinx.coroutines.experimental.async
 import org.apache.log4j.LogManager
@@ -63,6 +64,8 @@ object BotImpl : TelegramLongPollingBot() {
             val user: UserBot? = UserDAO.get(userId)
             //checking is it command, then parse command
             if (isDefaultCommand(userId, user, message)) return@async
+            MainParser.findTrack(userId, message.text)
+
 
         }
     }
@@ -74,7 +77,7 @@ object BotImpl : TelegramLongPollingBot() {
         sendSticker(sticker)
     }
 
-    private fun isDefaultCommand(id:Long, user: UserBot?, msg: Message): Boolean {
+    private fun isDefaultCommand(id: Long, user: UserBot?, msg: Message): Boolean {
         var out = true
         when (msg.text.toLowerCase().trim()) {
             "/mylist" -> {
@@ -99,6 +102,7 @@ object BotImpl : TelegramLongPollingBot() {
             log.error(user, e)
         }
     }
+
     private fun sendMessageToUser(send: SendMessage) {
         try {
             sendMessage(send)
