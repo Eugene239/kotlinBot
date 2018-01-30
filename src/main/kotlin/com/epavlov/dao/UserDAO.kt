@@ -6,7 +6,6 @@ import com.epavlov.entity.UserTrack
 import com.epavlov.repository.UserRepository
 import kotlinx.coroutines.experimental.Deferred
 import kotlinx.coroutines.experimental.async
-import kotlinx.coroutines.experimental.launch
 import org.apache.log4j.LogManager
 import org.telegram.telegrambots.api.objects.User
 import java.time.LocalDateTime
@@ -14,13 +13,16 @@ import java.time.LocalDateTime
 object UserDAO{
 
     private val log = LogManager.getLogger(UserDAO::class.java)
-
+    /**
+     * Check user, is he in db, if not add to db
+     * change last message time in db to LocalDateTime.now()
+     */
     fun checkUser(userTelegram: User){
         async {
-            val userBot: UserBot? = UserRepository.getUser(userTelegram.id.toLong())
+            val userBot: UserBot? = get(userTelegram.id.toLong())
             if (userBot == null) {
                 val newUser = UserBot(userTelegram)
-                UserRepository.save(newUser)
+                save(newUser)
                 newUserCall(newUser)
             } else {
                 userBot.lastMessageTime = LocalDateTime.now().toString()
@@ -29,20 +31,32 @@ object UserDAO{
         }
     }
 
+    /**
+     * Calling this function if new user connecting to the bot
+     */
     fun newUserCall(user:UserBot){
         log.info("[NEW USER]: $user")
     }
 
+    /**
+     * Get user  by ID
+     */
     suspend fun get(id:Long):UserBot?{
         return  UserRepository.getUser(id)
     }
 
+    /**
+     * get deffered UserBot, to await async call
+     */
     fun getAsync(id:Long): Deferred<UserBot?> {
         return async{
             return@async UserRepository.getUser(id)
         }
     }
 
+    /**
+     * delete track from user
+     */
     fun deleteTrack(id:Long, trackId:String){
         async {
             val user= UserRepository.getUser(id)
@@ -58,6 +72,9 @@ object UserDAO{
         }
     }
 
+    /**
+     * save track to user
+     */
     fun saveTrack(id:Long,track: Track){
         async {
             val user = UserRepository.getUser(id)
@@ -70,6 +87,9 @@ object UserDAO{
         }
     }
 
+    /**
+     * change track desc, to better understanding
+     */
     fun changeTrackDesc(id:Long,trackId:String,desc:String){
         async {
             val user=UserRepository.getUser(id)
@@ -84,6 +104,9 @@ object UserDAO{
         }
     }
 
+    /**
+     * save new user to db
+     */
     fun save(user:UserBot){
         UserRepository.save(user)
     }

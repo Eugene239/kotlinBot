@@ -13,7 +13,7 @@ import org.apache.log4j.LogManager
 object Parser17Track : Parser {
     private val log = LogManager.getLogger(BotImpl::class.java)
 
-    suspend override fun getTrack(id: String): Track? {
+    override suspend fun getTrack(id: String): Track? {
         log.debug("getTrack $id")
         log.debug(createCall(id))
        return null
@@ -46,7 +46,7 @@ object Parser17Track : Parser {
     }
 
     override fun getCode(): Int {
-        return 0
+        return 2
     }
 
     @JvmStatic

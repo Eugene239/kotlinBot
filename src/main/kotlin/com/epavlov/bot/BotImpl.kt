@@ -103,7 +103,7 @@ object BotImpl : TelegramLongPollingBot() {
         }
     }
 
-    private fun sendMessageToUser(send: SendMessage) {
+    fun sendMessageToUser(send: SendMessage) {
         try {
             sendMessage(send)
         } catch (e: Exception) {
