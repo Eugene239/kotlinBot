@@ -8,12 +8,13 @@ import com.epavlov.wrapper.StringWrapper
 import kotlinx.coroutines.experimental.runBlocking
 import org.apache.log4j.LogManager
 import org.telegram.telegrambots.api.methods.send.SendMessage
+import java.util.regex.Pattern
 
 
 object MainParser{
     private val log = LogManager.getLogger(MainParser::class.java)
     private val parserMap: HashMap<Int,Parser> = HashMap()
-
+    private val pattern = Pattern.compile(".*[0-9]{5,}.*")
     init{
         parserMap[ParserPochtaRu.getCode()]=ParserPochtaRu
     }
@@ -33,5 +34,8 @@ object MainParser{
                 }
             }
         }
+    }
+    fun isTrackId(text:String):Boolean{
+        return pattern.matcher(text).matches();
     }
 }
