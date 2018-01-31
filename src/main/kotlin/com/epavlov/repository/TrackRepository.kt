@@ -66,4 +66,10 @@ object TrackRepository {
             })
         }
     }
+    /**
+     * Save track to db
+     */
+    fun save(track:Track){
+        Repository.db.getReference("${Track.PATH}/${track.id}").setValue(track)
+    }
 }
