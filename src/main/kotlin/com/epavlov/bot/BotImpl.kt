@@ -7,7 +7,6 @@ import com.epavlov.entity.UserBot
 import com.epavlov.parsers.MainParser
 import com.epavlov.wrapper.StringWrapper
 import kotlinx.coroutines.experimental.async
-import kotlinx.coroutines.experimental.channels.Send
 import org.apache.log4j.LogManager
 import org.telegram.telegrambots.api.methods.send.SendMessage
 import org.telegram.telegrambots.api.methods.send.SendSticker
@@ -19,10 +18,8 @@ import java.util.*
 /**
  * todo 18.01.2018
  *  -   add parsers
- *      /start
  *  -   add/delete info
  *  -   delete track
- *  -   getTrackID
  *  -   schedule
  *     /help
  */
@@ -49,10 +46,6 @@ object BotImpl : TelegramLongPollingBot() {
         //checking user in db, if it doesn't contains it, save it
         p0?.message?.from?.let { UserDAO.checkUser(it) }
 
-        p0?.message?.text?.let {
-            log.debug("[MESSAGE] ${p0.message.from.id}: ${p0.message.text}")
-            parseTextMessage(p0.message.from.id.toLong(), p0.message)
-        }
         p0?.message?.sticker?.let {
             log.debug("[STICKER] ${p0.message.from.id}: ${p0.message.sticker.emoji} ${p0.message.sticker.fileId}")
             sendStickertoUser(p0.message.chatId,PropReader.getProperty("onSticker.sticker"))
@@ -61,6 +54,11 @@ object BotImpl : TelegramLongPollingBot() {
         p0?.callbackQuery?.let {
             log.debug("[CALLBACK] ${p0.callbackQuery?.from}:  ${p0.callbackQuery.data}")
             CommandParser.parseCommand(p0.callbackQuery)
+        }
+
+        p0?.message?.text?.let {
+            log.debug("[MESSAGE] ${p0.message.from.id}: ${p0.message.text}")
+            parseTextMessage(p0.message.from.id.toLong(), p0.message)
         }
     }
 
@@ -73,7 +71,6 @@ object BotImpl : TelegramLongPollingBot() {
             if (MainParser.checkTrack(message.text)){
                 MainParser.findTrack(userId, message.text)
             }else {
-                //sendMessageToUser(SendMessage(userId,PropReader.getProperty("error.track.input")))
                 sendStickertoUser(userId, cantUnderstand[random.nextInt(cantUnderstand.size)])
             }
         }

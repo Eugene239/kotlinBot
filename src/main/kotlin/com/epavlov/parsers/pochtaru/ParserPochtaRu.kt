@@ -6,6 +6,8 @@ import com.epavlov.parsers.pochtaru.entity.TrackPochta
 import com.google.gson.Gson
 import com.squareup.okhttp.OkHttpClient
 import com.squareup.okhttp.Request
+import kotlinx.coroutines.experimental.Deferred
+import kotlinx.coroutines.experimental.async
 import kotlinx.coroutines.experimental.runBlocking
 import org.apache.log4j.LogManager
 import org.json.JSONObject
@@ -54,6 +56,12 @@ object ParserPochtaRu : Parser {
 
     override fun getCode(): Int {
         return 1
+    }
+
+    override suspend fun getTrackAsync(trackId: String): Deferred<Track?> {
+        return async {
+            getTrack(trackId)
+        }
     }
 
 
