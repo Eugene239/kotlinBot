@@ -7,12 +7,14 @@ import com.epavlov.entity.UserBot
 import com.epavlov.parsers.MainParser
 import com.epavlov.wrapper.StringWrapper
 import kotlinx.coroutines.experimental.async
+import kotlinx.coroutines.experimental.channels.Send
 import org.apache.log4j.LogManager
 import org.telegram.telegrambots.api.methods.send.SendMessage
 import org.telegram.telegrambots.api.methods.send.SendSticker
 import org.telegram.telegrambots.api.objects.Message
 import org.telegram.telegrambots.api.objects.Update
 import org.telegram.telegrambots.bots.TelegramLongPollingBot
+import java.util.*
 
 /**
  * todo 18.01.2018
@@ -26,11 +28,13 @@ import org.telegram.telegrambots.bots.TelegramLongPollingBot
  */
 object BotImpl : TelegramLongPollingBot() {
     private val log = LogManager.getLogger(BotImpl::class.java)
-
+    private val cantUnderstand = PropReader.getProperty("cantUnderstand").split(",").toList()
+    private val random  = Random()
     init {
         PropReader.getProperty("admins")
                 .split(",")
                 .forEach { it -> sendMessage(SendMessage(it, "____ STARTED ____")) }
+
     }
 
     override fun getBotToken(): String {
@@ -51,6 +55,8 @@ object BotImpl : TelegramLongPollingBot() {
         }
         p0?.message?.sticker?.let {
             log.debug("[STICKER] ${p0.message.from.id}: ${p0.message.sticker.emoji} ${p0.message.sticker.fileId}")
+            sendStickertoUser(p0.message.chatId,PropReader.getProperty("onSticker.sticker"))
+            sendMessageToUser(SendMessage(p0.message.chatId,PropReader.getProperty("onSticker.text")))
         }
         p0?.callbackQuery?.let {
             log.debug("[CALLBACK] ${p0.callbackQuery?.from}:  ${p0.callbackQuery.data}")
@@ -64,9 +70,12 @@ object BotImpl : TelegramLongPollingBot() {
             val user: UserBot? = UserDAO.get(userId)
             //checking is it command, then parse command
             if (isDefaultCommand(userId, user, message)) return@async
-            MainParser.findTrack(userId, message.text)
-
-
+            if (MainParser.checkTrack(message.text)){
+                MainParser.findTrack(userId, message.text)
+            }else {
+                //sendMessageToUser(SendMessage(userId,PropReader.getProperty("error.track.input")))
+                sendStickertoUser(userId, cantUnderstand[random.nextInt(cantUnderstand.size)])
+            }
         }
     }
 
