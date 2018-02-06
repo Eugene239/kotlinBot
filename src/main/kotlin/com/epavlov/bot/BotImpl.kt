@@ -13,24 +13,25 @@ import org.telegram.telegrambots.api.methods.send.SendSticker
 import org.telegram.telegrambots.api.objects.Message
 import org.telegram.telegrambots.api.objects.Update
 import org.telegram.telegrambots.bots.TelegramLongPollingBot
+import java.util.*
 
 /**
  * todo 18.01.2018
  *  -   add parsers
- *      /start
  *  -   add/delete info
  *  -   delete track
- *  -   getTrackID
  *  -   schedule
  *     /help
  */
 object BotImpl : TelegramLongPollingBot() {
     private val log = LogManager.getLogger(BotImpl::class.java)
-
+    private val cantUnderstand = PropReader.getProperty("cantUnderstand").split(",").toList()
+    private val random  = Random()
     init {
         PropReader.getProperty("admins")
                 .split(",")
                 .forEach { it -> sendMessage(SendMessage(it, "____ STARTED ____")) }
+
     }
 
     override fun getBotToken(): String {
@@ -45,16 +46,19 @@ object BotImpl : TelegramLongPollingBot() {
         //checking user in db, if it doesn't contains it, save it
         p0?.message?.from?.let { UserDAO.checkUser(it) }
 
-        p0?.message?.text?.let {
-            log.debug("[MESSAGE] ${p0.message.from.id}: ${p0.message.text}")
-            parseTextMessage(p0.message.from.id.toLong(), p0.message)
-        }
         p0?.message?.sticker?.let {
             log.debug("[STICKER] ${p0.message.from.id}: ${p0.message.sticker.emoji} ${p0.message.sticker.fileId}")
+            sendStickertoUser(p0.message.chatId,PropReader.getProperty("onSticker.sticker"))
+            sendMessageToUser(SendMessage(p0.message.chatId,PropReader.getProperty("onSticker.text")))
         }
         p0?.callbackQuery?.let {
             log.debug("[CALLBACK] ${p0.callbackQuery?.from}:  ${p0.callbackQuery.data}")
             CommandParser.parseCommand(p0.callbackQuery)
+        }
+
+        p0?.message?.text?.let {
+            log.debug("[MESSAGE] ${p0.message.from.id}: ${p0.message.text}")
+            parseTextMessage(p0.message.from.id.toLong(), p0.message)
         }
     }
 
@@ -64,9 +68,11 @@ object BotImpl : TelegramLongPollingBot() {
             val user: UserBot? = UserDAO.get(userId)
             //checking is it command, then parse command
             if (isDefaultCommand(userId, user, message)) return@async
-            MainParser.findTrack(userId, message.text)
-
-
+            if (MainParser.checkTrack(message.text)){
+                MainParser.findTrack(userId, message.text)
+            }else {
+                sendStickertoUser(userId, cantUnderstand[random.nextInt(cantUnderstand.size)])
+            }
         }
     }
 

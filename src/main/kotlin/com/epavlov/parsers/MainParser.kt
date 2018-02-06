@@ -6,7 +6,7 @@ import com.epavlov.entity.Track
 import com.epavlov.parsers.pochtaru.ParserPochtaRu
 import com.epavlov.parsers.track17.Parser17Track
 import com.epavlov.wrapper.StringWrapper
-import kotlinx.coroutines.experimental.runBlocking
+import kotlinx.coroutines.experimental.launch
 import org.apache.log4j.LogManager
 import org.telegram.telegrambots.api.methods.send.SendMessage
 import java.util.regex.Pattern
@@ -16,6 +16,7 @@ object MainParser{
     private val log = LogManager.getLogger(MainParser::class.java)
     private val parserMap: HashMap<Int,Parser> = HashMap()
     private val pattern = Pattern.compile(".*[0-9]{5,}.*")
+
     init{
         parserMap[Parser17Track.getCode()]=Parser17Track
         parserMap[ParserPochtaRu.getCode()]=ParserPochtaRu
@@ -26,21 +27,29 @@ object MainParser{
 
     fun findTrack(userId: Long, text: String){
         log.debug("findTrack userId: $userId text: $text parsers: ${parserMap.size}")
-        runBlocking {
-            parserMap.values.forEach { it->
-                val track= it.getTrack(text)
-                if(track!=null){
-                    StringWrapper.wrapUserTrack(UserDAO.get(userId),track)
-                }else{
-                    BotImpl.sendMessage(SendMessage(userId,"Трек не найден: $text"))
-                }
-            }
-        }
-    }
-    fun isTrackId(text:String):Boolean{
-        return pattern.matcher(text).matches();
+       launch {
+           val tracks = ArrayList<Track?>()
+
+           parserMap.values.forEach { it ->
+               val track = it.getTrack(text)
+               if (track != null) {
+                   StringWrapper.wrapUserTrack(UserDAO.get(userId), track)
+               } else {
+                   BotImpl.sendMessage(SendMessage(userId, "Трек не найден: $text"))
+               }
+           }
+       }
     }
     fun getParser(parserCode:Int):String{
         return  parserMap[parserCode]!!.getName()
+    }
+
+    fun checkTrack(text: String): Boolean {
+        return pattern.matcher(text).matches()
+    }
+
+    @JvmStatic
+    fun main(args: Array<String>) {
+        MainParser.findTrack(172189604,"RF519862712SG")
     }
 }
