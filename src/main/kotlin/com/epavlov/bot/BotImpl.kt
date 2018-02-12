@@ -26,7 +26,8 @@ import java.util.*
 object BotImpl : TelegramLongPollingBot() {
     private val log = LogManager.getLogger(BotImpl::class.java)
     private val cantUnderstand = PropReader.getProperty("cantUnderstand").split(",").toList()
-    private val random  = Random()
+    private val random = Random()
+
     init {
         PropReader.getProperty("admins")
                 .split(",")
@@ -48,8 +49,8 @@ object BotImpl : TelegramLongPollingBot() {
 
         p0?.message?.sticker?.let {
             log.debug("[STICKER] ${p0.message.from.id}: ${p0.message.sticker.emoji} ${p0.message.sticker.fileId}")
-            sendStickertoUser(p0.message.chatId,PropReader.getProperty("onSticker.sticker"))
-            sendMessageToUser(SendMessage(p0.message.chatId,PropReader.getProperty("onSticker.text")))
+            sendStickertoUser(p0.message.chatId, PropReader.getProperty("onSticker.sticker"))
+            sendMessageToUser(SendMessage(p0.message.chatId, PropReader.getProperty("onSticker.text")))
         }
         p0?.callbackQuery?.let {
             log.debug("[CALLBACK] ${p0.callbackQuery?.from}:  ${p0.callbackQuery.data}")
@@ -68,9 +69,10 @@ object BotImpl : TelegramLongPollingBot() {
             val user: UserBot? = UserDAO.get(userId)
             //checking is it command, then parse command
             if (isDefaultCommand(userId, user, message)) return@async
-            if (MainParser.checkTrack(message.text)){
-                MainParser.findTrack(userId, message.text)
-            }else {
+            if (MainParser.checkTrack(message.text)) {
+                 StringWrapper.sendTracksToUser(userId, MainParser.findTrack(userId, message.text))
+
+            } else {
                 sendStickertoUser(userId, cantUnderstand[random.nextInt(cantUnderstand.size)])
             }
         }
@@ -92,7 +94,7 @@ object BotImpl : TelegramLongPollingBot() {
                 }
             }
             "/start" -> {
-                   greeting(id)
+                greeting(id)
             }
             else -> {
                 out = false
@@ -110,19 +112,26 @@ object BotImpl : TelegramLongPollingBot() {
     }
 
     fun sendMessageToUser(send: SendMessage) {
-        try {
+        safe {
             sendMessage(send)
-        } catch (e: Exception) {
-            log.error(send.chatId, e)
         }
     }
 
-    fun greeting(id : Long){
-        val sticker :String= PropReader.getProperty("greeting.sticker")
-        if (sticker.isNotEmpty()){
-            sendStickertoUser(id,sticker)
+    fun greeting(id: Long) {
+        val sticker: String = PropReader.getProperty("greeting.sticker")
+        if (sticker.isNotEmpty()) {
+            sendStickertoUser(id, sticker)
         }
-        sendMessageToUser(SendMessage(id,PropReader.getProperty("greeting")))
+        sendMessageToUser(SendMessage(id, PropReader.getProperty("greeting")))
+    }
+
+    inline fun safe(noinline block: () -> Unit) {
+        try {
+            block()
+        } catch (e: Exception) {
+            val log = LogManager.getLogger(block.javaClass.name)
+            log.error(e.message, e)
+        }
     }
 
 }

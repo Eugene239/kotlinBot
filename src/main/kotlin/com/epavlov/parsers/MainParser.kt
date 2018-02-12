@@ -22,10 +22,6 @@ object MainParser {
         parserMap[ParserPochtaRu.getCode()] = ParserPochtaRu
     }
 
-    suspend fun parse(text: String): Track? {
-        return null
-    }
-
     suspend fun findTrack(userId: Long, text: String): List<Track?> {
         log.debug("findTrack userId: $userId text: $text parsers: ${parserMap.size}")
         val list = Collections.synchronizedList(ArrayList<Track?>())

@@ -37,7 +37,6 @@ object ParserPochtaRu : Parser {
 
             val track = Track()
             track.last_check = LocalDateTime.now().toString()
-            track.last_modify = history.date
             track.text = "${history.humanStatus}\n${history.description}"
             track.id = trackPochta.list[0].trackingItem.barcode
             track.status = trackPochta.list[0].trackingItem.globalStatus
@@ -51,7 +50,7 @@ object ParserPochtaRu : Parser {
     }
 
     override fun getName(): String {
-        return "https://pochta.ru"
+        return "Pochta.ru"
     }
 
     override fun getCode(): Int {

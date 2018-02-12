@@ -1,5 +1,6 @@
 package com.epavlov.repository
 
+import com.epavlov.bot.BotImpl.safe
 import com.epavlov.entity.UserBot
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
@@ -44,13 +45,12 @@ object UserRepository {
                     log.error(p0?.message, p0?.toException())
                     it.resume(list)
                 }
+
                 override fun onDataChange(p0: DataSnapshot?) {
                     p0?.children?.forEach { it ->
-                        try {
+                        safe {
                             val user: UserBot = it.getValue(UserBot::class.java)
                             list.add(user)
-                        } catch (e: Exception) {
-                            log.error(e.message, e)
                         }
                     }
                     it.resume(list)

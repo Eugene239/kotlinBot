@@ -12,12 +12,12 @@ import kotlinx.coroutines.experimental.delay
 import kotlinx.coroutines.experimental.runBlocking
 import org.apache.log4j.LogManager
 import java.io.IOException
+import java.time.LocalDateTime
 import kotlin.coroutines.experimental.suspendCoroutine
 
 object Parser17Track : Parser {
     private val log = LogManager.getLogger(Parser17Track::class.java)
     private val gson = Gson()
-    //todo add 17 track parse value
     override suspend fun getTrack(id: String): Track? {
         log.debug("getTrack $id")
         val json = createCall(id)
@@ -26,6 +26,15 @@ object Parser17Track : Parser {
             val track17 = JSONParse(json, Track17::class.java)
             track17?.let {
                 log.debug(track17.toString())
+                val track = Track();
+                track.parserCode=this.getCode()
+                track.id=id
+                track.last_check=LocalDateTime.now().toString()
+                track.time = track17.dat[0].track.ylt1?:""
+                track.status=track17.dat[0].track.z0.z?:""
+                track.text=track17.dat[0].track.z0.c?:""
+                log.debug("OUTPUT: $track")
+                return track
             }
         }
         return null

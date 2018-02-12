@@ -43,6 +43,7 @@ object CainiaoParser : Parser {
             if (!json.isNullOrEmpty()) {
                 val track = gson.fromJson(json, Track::class.java)
                 track.last_check = LocalDateTime.now().toString()
+                track.text=track.text?:""
                 track.id = trackId
                 return track
             }else return null
@@ -76,7 +77,7 @@ object CainiaoParser : Parser {
 
     }
     override fun getName(): String {
-        return "https://global.cainiao.com"
+        return "Global Cainiao"
     }
 
     override fun getCode(): Int {
