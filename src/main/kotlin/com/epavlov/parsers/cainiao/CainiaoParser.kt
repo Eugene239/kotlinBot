@@ -18,6 +18,7 @@ object CainiaoParser : Parser {
     private val url = "https://global.cainiao.com/detail.htm?mailNoList="
     private val gson= Gson()
     override suspend fun getTrack(trackId: String): Track? {
+        log.debug("get Track $trackId")
         var out=""
         try {
             val connection = URL(url + trackId).openConnection()

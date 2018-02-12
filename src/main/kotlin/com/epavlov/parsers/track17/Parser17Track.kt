@@ -1,6 +1,5 @@
 package com.epavlov.parsers.track17
 
-import com.epavlov.bot.BotImpl
 import com.epavlov.entity.Track
 import com.epavlov.parsers.Parser
 import com.epavlov.parsers.track17.entity.Track17
@@ -16,9 +15,9 @@ import java.io.IOException
 import kotlin.coroutines.experimental.suspendCoroutine
 
 object Parser17Track : Parser {
-    private val log = LogManager.getLogger(BotImpl::class.java)
+    private val log = LogManager.getLogger(Parser17Track::class.java)
     private val gson = Gson()
-
+    //todo add 17 track parse value
     override suspend fun getTrack(id: String): Track? {
         log.debug("getTrack $id")
         val json = createCall(id)

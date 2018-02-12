@@ -1,47 +1,46 @@
 package com.epavlov.parsers
 
-import com.epavlov.bot.BotImpl
-import com.epavlov.dao.UserDAO
 import com.epavlov.entity.Track
+import com.epavlov.parsers.cainiao.CainiaoParser
 import com.epavlov.parsers.pochtaru.ParserPochtaRu
 import com.epavlov.parsers.track17.Parser17Track
-import com.epavlov.wrapper.StringWrapper
-import kotlinx.coroutines.experimental.launch
+import kotlinx.coroutines.experimental.async
+import kotlinx.coroutines.experimental.runBlocking
 import org.apache.log4j.LogManager
-import org.telegram.telegrambots.api.methods.send.SendMessage
+import java.util.*
 import java.util.regex.Pattern
 
 
-object MainParser{
+object MainParser {
     private val log = LogManager.getLogger(MainParser::class.java)
-    private val parserMap: HashMap<Int,Parser> = HashMap()
+    private val parserMap: HashMap<Int, Parser> = HashMap()
     private val pattern = Pattern.compile(".*[0-9]{5,}.*")
 
-    init{
-        parserMap[Parser17Track.getCode()]=Parser17Track
-        parserMap[ParserPochtaRu.getCode()]=ParserPochtaRu
+    init {
+        parserMap[CainiaoParser.getCode()] = CainiaoParser
+        parserMap[Parser17Track.getCode()] = Parser17Track
+        parserMap[ParserPochtaRu.getCode()] = ParserPochtaRu
     }
-    suspend fun parse(text:String):Track?{
+
+    suspend fun parse(text: String): Track? {
         return null
     }
 
-    fun findTrack(userId: Long, text: String){
+    suspend fun findTrack(userId: Long, text: String): List<Track?> {
         log.debug("findTrack userId: $userId text: $text parsers: ${parserMap.size}")
-       launch {
-           val tracks = ArrayList<Track?>()
-
-           parserMap.values.forEach { it ->
-               val track = it.getTrack(text)
-               if (track != null) {
-                   StringWrapper.wrapUserTrack(UserDAO.get(userId), track)
-               } else {
-                   BotImpl.sendMessage(SendMessage(userId, "Трек не найден: $text"))
-               }
-           }
-       }
+        val list = Collections.synchronizedList(ArrayList<Track?>())
+        parserMap.values.forEach { it ->
+            val deftrack = it.getTrackAsync(text)
+            async {
+                list.add(deftrack.await())
+            }
+        }
+        while (list.size< parserMap.size){ }
+        return list
     }
-    fun getParser(parserCode:Int):String{
-        return  parserMap[parserCode]!!.getName()
+
+    fun getParser(parserCode: Int): String {
+        return parserMap[parserCode]!!.getName()
     }
 
     fun checkTrack(text: String): Boolean {
@@ -50,6 +49,15 @@ object MainParser{
 
     @JvmStatic
     fun main(args: Array<String>) {
-        MainParser.findTrack(172189604,"RF519862712SG")
+        runBlocking {
+            val l  = MainParser.findTrack(172189604, "RF519862712SG")
+            println("#####################")
+            l.forEach({
+               println(it.toString())
+                println()
+            })
+
+            println("#####################")
+        }
     }
 }
