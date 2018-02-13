@@ -31,4 +31,8 @@ object TrackDAO {
             }
         }
     }
+    fun save(track: Track){
+        log.debug("[save] $track")
+        TrackRepository.save(track)
+    }
 }

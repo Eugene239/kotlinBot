@@ -12,6 +12,7 @@ class Track {
     var last_check: String? = null
     var time: String? = null
     var users = HashMap<String, Long>()
+    var last_modify :String?=null
 
  /*   fun consume(track: Track) {
         text = track.text
@@ -27,7 +28,8 @@ class Track {
     }
 
     override fun toString(): String {
-        return "Track(id=$id, status=$status, parserCode=$parserCode, text=$text, last_check=$last_check, time=$time, users=$users)"
+        return "Track(id=$id, status=$status, parserCode=$parserCode, text=$text, last_check=$last_check, time=$time, users=$users, last_modify='$last_modify')"
     }
+
 
 }

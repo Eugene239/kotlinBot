@@ -76,12 +76,19 @@ object UserDAO{
      * save track to user
      */
     fun saveTrack(id:Long,track: Track){
+
         async {
             val user = UserRepository.getUser(id)
             user?.let {
                 if (!track.id.isNullOrEmpty()){
                     user.trackList.put(track.id!!, UserTrack(LocalDateTime.now().toString(),"",track.id))
                     save(user)
+
+                    //checking is track have this user
+                    if (!track.users.containsKey(user.id.toString())){
+                        track.users[user.id.toString()] = user.id!!.toLong()
+                        TrackDAO.save(track)
+                    }
                 }
             }
         }
@@ -108,6 +115,14 @@ object UserDAO{
      * save new user to db
      */
     fun save(user:UserBot){
+        log.info("[save] $user")
         UserRepository.save(user)
+    }
+    /**
+     * check is user already got this track
+     */
+    suspend fun containTrack(userId: Long, trackId: String):Boolean{
+         return  get(userId)?.trackList?.get(trackId)!=null
+
     }
 }

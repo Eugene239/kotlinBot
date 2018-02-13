@@ -6,16 +6,13 @@ import com.epavlov.commands.Command
 import com.epavlov.entity.Track
 import com.epavlov.entity.UserBot
 import com.epavlov.parsers.MainParser
-import com.google.gson.Gson
 import org.apache.log4j.LogManager
 import org.telegram.telegrambots.api.methods.send.SendMessage
 import org.telegram.telegrambots.api.objects.replykeyboard.InlineKeyboardMarkup
 import org.telegram.telegrambots.api.objects.replykeyboard.buttons.InlineKeyboardButton
-import java.util.*
 
 object StringWrapper {
     private val log = LogManager.getLogger(StringWrapper::class.java)
-    private val gson = Gson()
     fun wrapUserTrackList(userBot: UserBot): SendMessage {
         val out = SendMessage()
         out.setChatId(userBot.id)
@@ -50,7 +47,6 @@ object StringWrapper {
     /**
      * get Text track to User
      */
-    //todo add parser desc
     private fun getTextMessage(userBot: UserBot, track: Track): String {
         val name: String = userBot.trackList[track.id]?.name ?: ""
         if (!name.isEmpty()) {
@@ -58,12 +54,14 @@ object StringWrapper {
                     "${userBot.trackList[track.id]?.name}\n\n" +
                     "Статус: ${track.status ?: ""}\n\n" +
                     "${track.text ?: ""}\n\n" +
-                    "Проверен: ${track.last_check}"
+                    "Проверен: ${track.last_modify}\n"+
+                    "Парсер ${MainParser.getParserName(track.parserCode)}"
         }
         return "${track.id}\n\n" +
                 "Статус: ${track.status ?: ""}\n\n" +
                 "${track.text ?: ""}\n\n" +
-                "Проверен: ${track.last_check}"
+                "Проверен: ${track.last_modify}\n"+
+                "Парсер ${MainParser.getParserName(track.parserCode)}"
     }
 
     fun sendTrackId(userId: Long, trackId: String) {
@@ -76,14 +74,21 @@ object StringWrapper {
             //get track id command
             val list = ArrayList<InlineKeyboardButton>()
             val getTrackId = InlineKeyboardButton().setText(PropReader.getProperty("getTrackId")).setCallbackData("${Command.GET_TRACK_ID}#$trackId")
+
             list.add(getTrackId)
             keyboardMarkup.keyboard.add(list)
+
+            val deleteList = ArrayList<InlineKeyboardButton>()
+            val deleteButton  = InlineKeyboardButton().setText(PropReader.getProperty("DELETE_TRACK")).setCallbackData("${Command.DELETE}#$trackId")
+            deleteList.add(deleteButton)
+            keyboardMarkup.keyboard.add(deleteList)
         }
         return keyboardMarkup
     }
 
     fun sendTracksToUser(userId: Long, listTrack: List<Track?>) {
         val result = listTrack.filter { it != null }
+        log.info("[sendTracksToUser] got ${result.size} results")
         if (result.isEmpty()) {
             BotImpl.sendMessageToUser(SendMessage(userId, PropReader.getProperty("NOT_FOUND")))
             return
@@ -93,9 +98,9 @@ object StringWrapper {
         result.forEach {
             it.let {
                 val list = ArrayList<InlineKeyboardButton>()
-                val btnData = "${Command.POST}#{\"id\"=\"${it?.id}\",\"parserCode\"=\"${it?.parserCode}\"}"
-                log.debug(btnData)
-                val btn = InlineKeyboardButton().setText(MainParser.getParser(it!!.parserCode)).setCallbackData(btnData)
+                val btnData = "${Command.POST}#{\"id\":\"${it?.id}\",\"parserCode\":\"${it?.parserCode}\"}"
+               // log.debug(btnData)
+                val btn = InlineKeyboardButton().setText(MainParser.getParserName(it!!.parserCode)).setCallbackData(btnData)
                 list.add(btn)
                 keyboardMarkup.keyboard.add(list)
             }

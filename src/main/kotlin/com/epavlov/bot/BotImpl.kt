@@ -2,6 +2,7 @@ package com.epavlov.bot
 
 import com.epavlov.PropReader
 import com.epavlov.commands.CommandParser
+import com.epavlov.dao.TrackDAO
 import com.epavlov.dao.UserDAO
 import com.epavlov.entity.UserBot
 import com.epavlov.parsers.MainParser
@@ -70,8 +71,21 @@ object BotImpl : TelegramLongPollingBot() {
             //checking is it command, then parse command
             if (isDefaultCommand(userId, user, message)) return@async
             if (MainParser.checkTrack(message.text)) {
-                 StringWrapper.sendTracksToUser(userId, MainParser.findTrack(userId, message.text))
-
+                //user already had this track
+                if (UserDAO.containTrack(userId, message.text)) {
+                    log.debug("user already have this track $userId ${message.text}")
+                    StringWrapper.wrapUserTrack(user, TrackDAO.get(message.text))
+                    return@async
+                }
+                //this track contains in db, but user don't have it
+                TrackDAO.get(message.text)?.let { track ->
+                    log.debug("this track already stored in db ${track.id}")
+                    UserDAO.saveTrack(userId, track)
+                    StringWrapper.wrapUserTrack(user, track)
+                    return@async
+                }
+                //finding track
+                StringWrapper.sendTracksToUser(userId, MainParser.findTrack(userId, message.text))
             } else {
                 sendStickertoUser(userId, cantUnderstand[random.nextInt(cantUnderstand.size)])
             }
@@ -129,8 +143,7 @@ object BotImpl : TelegramLongPollingBot() {
         try {
             block()
         } catch (e: Exception) {
-            val log = LogManager.getLogger(block.javaClass.name)
-            log.error(e.message, e)
+            LogManager.getLogger(block.javaClass.name).error(e.message, e)
         }
     }
 

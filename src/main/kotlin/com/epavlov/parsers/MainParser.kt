@@ -31,11 +31,27 @@ object MainParser {
                 list.add(deftrack.await())
             }
         }
-        while (list.size< parserMap.size){ }
+        val time = System.currentTimeMillis()
+        // if one parser dead, max await time 10000
+        while (list.size < parserMap.size && System.currentTimeMillis() < time + 15000) {
+        }
+        if (System.currentTimeMillis() > time + 15000) {
+            log.error("timed out")
+        }
         return list
     }
 
-    fun getParser(parserCode: Int): String {
+    /**
+     * User it for testing or, then you know witch parser u want to use
+     */
+    suspend fun findTrack(trackId: String, parserCode: Int): Track? {
+        parserMap[parserCode]?.let { parser ->
+                return parser.getTrack(trackId)
+        }
+        return null
+    }
+
+    fun getParserName(parserCode: Int): String {
         return parserMap[parserCode]!!.getName()
     }
 
@@ -46,10 +62,10 @@ object MainParser {
     @JvmStatic
     fun main(args: Array<String>) {
         runBlocking {
-            val l  = MainParser.findTrack(172189604, "RF519862712SG")
+            val l = MainParser.findTrack(172189604, "RF519862712SG")
             println("#####################")
             l.forEach({
-               println(it.toString())
+                println(it.toString())
                 println()
             })
 

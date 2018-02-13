@@ -1,5 +1,5 @@
 package com.epavlov.commands
 
 enum class Command{
-    GET_TRACK, GET_TRACK_ID, POST
+    GET_TRACK, GET_TRACK_ID, POST, DELETE
 }

@@ -18,7 +18,7 @@ object CainiaoParser : Parser {
     private val url = "https://global.cainiao.com/detail.htm?mailNoList="
     private val gson= Gson()
     override suspend fun getTrack(trackId: String): Track? {
-        log.debug("get Track $trackId")
+        log.info("[getTrack]: $trackId")
         var out=""
         try {
             val connection = URL(url + trackId).openConnection()
@@ -37,7 +37,12 @@ object CainiaoParser : Parser {
             return null
         }
 
-        if (out == "") return null// throw new TextException(TextException.WRONG_TRACK+": "+track_id);//  //не было данных
+        if (out == "") {
+            log.error("can't find track $trackId")
+            return null
+        }
+
+        // throw new TextException(TextException.WRONG_TRACK+": "+track_id);//  //не было данных
         try {
             val json = parseString(out)
             if (!json.isNullOrEmpty()) {

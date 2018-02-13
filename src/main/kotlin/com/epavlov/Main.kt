@@ -8,8 +8,8 @@ import org.telegram.telegrambots.TelegramBotsApi
 
 fun main(args: Array<String>) {
     ApiContextInitializer.init()
-    val telegramBotsApi = TelegramBotsApi()
-    safe{
+    safe {
+        val telegramBotsApi = TelegramBotsApi()
         telegramBotsApi.registerBot(BotImpl)
     }
 }
