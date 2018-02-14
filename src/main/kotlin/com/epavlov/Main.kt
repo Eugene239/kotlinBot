@@ -15,8 +15,8 @@ fun main(args: Array<String>) {
         val telegramBotsApi = TelegramBotsApi()
         telegramBotsApi.registerBot(BotImpl)
         Timer("checkTracks", false)
-                .schedule(3000, 60*60000) {
-                        ScheduleChecker.checkTracks()
+                .schedule(3000, 60 * 60000) {
+                    ScheduleChecker.checkTracks()
                 }
     }
 
