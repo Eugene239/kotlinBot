@@ -6,6 +6,7 @@ import com.epavlov.entity.UserTrack
 import com.epavlov.repository.UserRepository
 import kotlinx.coroutines.experimental.Deferred
 import kotlinx.coroutines.experimental.async
+import kotlinx.coroutines.experimental.launch
 import org.apache.log4j.LogManager
 import org.telegram.telegrambots.api.objects.User
 import java.time.LocalDateTime
@@ -58,7 +59,8 @@ object UserDAO{
      * delete track from user
      */
     fun deleteTrack(id:Long, trackId:String){
-        async {
+        log.debug("delete $id track= $trackId")
+        launch {
             val user= UserRepository.getUser(id)
             user?.let {
                 if (user.trackList.containsKey(trackId)){

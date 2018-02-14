@@ -33,6 +33,9 @@ object StringWrapper {
         return out
     }
 
+    /**
+     * todo refactor cuz if track deleted in i try to get it, i need to check if it has been deleted from db
+     */
     fun wrapUserTrack(userBot: UserBot?, track: Track?) {
         userBot?.let {
             track?.let {
@@ -40,13 +43,22 @@ object StringWrapper {
                 val send = SendMessage(userBot.id, getTextMessage(userBot, track))
                 send.replyMarkup = getTrackKeyboard(track.id)
                 BotImpl.sendMessageToUser(userBot, send)
+                return
             }
         }
+        log.error("error input data $userBot $track")
+        userBot?.let {
+
+            //UserDAO.deleteTrack(userBot)
+            BotImpl.sendMessageToUser(SendMessage(userBot.id,PropReader.getProperty("NOT_FOUND")))
+        }
+
     }
 
     /**
      * get Text track to User
      */
+    /*todo fix text output*/
     private fun getTextMessage(userBot: UserBot, track: Track): String {
         val name: String = userBot.trackList[track.id]?.name ?: ""
         if (!name.isEmpty()) {

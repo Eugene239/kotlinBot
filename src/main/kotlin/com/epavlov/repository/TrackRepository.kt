@@ -1,14 +1,10 @@
 package com.epavlov.repository
 
 import com.epavlov.entity.Track
-import com.epavlov.entity.UserBot
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.ValueEventListener
-import kotlinx.coroutines.experimental.*
 import org.apache.log4j.LogManager
-import kotlin.coroutines.experimental.Continuation
-import kotlin.coroutines.experimental.CoroutineContext
 import kotlin.coroutines.experimental.suspendCoroutine
 
 
@@ -71,5 +67,11 @@ object TrackRepository {
      */
     fun save(track:Track){
         Repository.db.getReference("${Track.PATH}/${track.id}").setValue(track)
+    }
+    /**
+     * delete track from db
+     */
+    fun remove(trackId:String){
+        Repository.db.getReference("${Track.PATH}/$trackId").removeValue()
     }
 }

@@ -39,7 +39,8 @@ object CommandParser{
             }
             Command.DELETE->{
                 log.debug("$command $value")
-                //todo complete this
+                UserDAO.deleteTrack(callback.from.id.toLong(),value)
+                BotImpl.sendMessageToUser(SendMessage(callback.from.id.toLong(),PropReader.getProperty("TRACK_DELETED").replace("###",value)))
             }
         }
     }

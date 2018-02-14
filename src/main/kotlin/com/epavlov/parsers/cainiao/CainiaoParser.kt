@@ -1,5 +1,6 @@
 package com.epavlov.parsers.cainiao
 
+import com.epavlov.bot.BotImpl.safe
 import com.epavlov.entity.Track
 import com.epavlov.parsers.Parser
 import com.google.gson.Gson
@@ -16,25 +17,30 @@ import java.time.LocalDateTime
 object CainiaoParser : Parser {
     private val log = LogManager.getLogger(CainiaoParser::class.java)
     private val url = "https://global.cainiao.com/detail.htm?mailNoList="
-    private val gson= Gson()
+    private val gson = Gson()
     override suspend fun getTrack(trackId: String): Track? {
-        log.info("[getTrack]: $trackId")
-        var out=""
-        try {
-            val connection = URL(url + trackId).openConnection()
-            connection.connectTimeout = 30000
-            val isR = connection.getInputStream()
-            val br = BufferedReader(InputStreamReader(isR))
+        log.debug("[getTrack]: $trackId")
+        var out = ""
+        val connection = URL(url + trackId).openConnection()
+        val isR = connection.getInputStream()
+        val br = BufferedReader(InputStreamReader(isR))
 
-            br.readLines().forEach({
+        try {
+            connection.connectTimeout = 30000
+            br.readLines().forEach{
                 if (it.contains("latestTrackingInfo") && it.contains("waybill_list_val_box")) {
                     out = it
                     return@forEach
                 }
-            })
+            }
         } catch (e: Exception) {
-            log.error(e.message,e)
+            log.error(e.message, e)
             return null
+        } finally {
+            safe {
+                isR.close()
+                br.close()
+            }
         }
 
         if (out == "") {
@@ -42,19 +48,19 @@ object CainiaoParser : Parser {
             return null
         }
 
-        // throw new TextException(TextException.WRONG_TRACK+": "+track_id);//  //не было данных
-        try {
+        return try {
             val json = parseString(out)
             if (!json.isNullOrEmpty()) {
                 val track = gson.fromJson(json, Track::class.java)
-                track.last_check = LocalDateTime.now().toString()
-                track.text=track.text?:""
+                track.last_modify = LocalDateTime.now().toString()
+                track.text = track.text ?: ""
                 track.id = trackId
-                return track
-            }else return null
+                log.debug("[RESULT] $track")
+                track
+            } else null
         } catch (e: Exception) {
-            log.error(e.message,e)
-            return null
+            log.error(e.message, e)
+            null
         }
     }
 
@@ -67,20 +73,21 @@ object CainiaoParser : Parser {
             out = "\"latestTrackingInfo" + out
             val str = out.split("\\{".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
             out = str[1].split("}".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()[0]
-            out = out.replace("desc:", "{\"desc\":\"")
+            out = out.replace("desc:", "{\"text\":\"")
             out = out.replace(",timeZone:", "\"}")
             out = out.replace(",status:", "\",\"status\":\"")
             out = out.replace(",time:", "\",\"time\":\"")
             out = out.split("}".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()[0] + "}"
-            log.debug(out)
+            log.debug("[parseString]: $out")
             return out
         } catch (e: Exception) {
-            log.error(e.message,e)
+            log.error(e.message, e)
             return null
             //   throw new TextException(TextException.WRONG_SITE_DATA);
         }
 
     }
+
     override fun getName(): String {
         return "Global Cainiao"
     }

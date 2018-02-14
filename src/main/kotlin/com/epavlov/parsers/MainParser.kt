@@ -4,7 +4,7 @@ import com.epavlov.entity.Track
 import com.epavlov.parsers.cainiao.CainiaoParser
 import com.epavlov.parsers.pochtaru.ParserPochtaRu
 import com.epavlov.parsers.track17.Parser17Track
-import kotlinx.coroutines.experimental.async
+import kotlinx.coroutines.experimental.Deferred
 import kotlinx.coroutines.experimental.runBlocking
 import org.apache.log4j.LogManager
 import java.util.*
@@ -23,30 +23,27 @@ object MainParser {
     }
 
     suspend fun findTrack(userId: Long, text: String): List<Track?> {
-        log.debug("findTrack userId: $userId text: $text parsers: ${parserMap.size}")
         val list = Collections.synchronizedList(ArrayList<Track?>())
-        parserMap.values.forEach { it ->
-            val deftrack = it.getTrackAsync(text)
-            async {
-                list.add(deftrack.await())
-            }
+        val jobs = mutableListOf<Deferred<Track?>>()
+        log.debug("findTrack userId: $userId text: $text parsers: ${parserMap.size}")
+        parserMap.values.forEach {
+                log.debug("searching $text by ${it.getName()}")
+                jobs.add(it.getTrackAsync(text))
         }
-        val time = System.currentTimeMillis()
-        // if one parser dead, max await time 10000
-        while (list.size < parserMap.size && System.currentTimeMillis() < time + 15000) {
-        }
-        if (System.currentTimeMillis() > time + 15000) {
-            log.error("timed out")
+        jobs.forEach {
+            val track= it.await()
+            list.add(track)
         }
         return list
+
     }
 
     /**
-     * User it for testing or, then you know witch parser u want to use
+     * User it for testing or then you know witch parser u want to use
      */
     suspend fun findTrack(trackId: String, parserCode: Int): Track? {
         parserMap[parserCode]?.let { parser ->
-                return parser.getTrack(trackId)
+            return parser.getTrack(trackId)
         }
         return null
     }

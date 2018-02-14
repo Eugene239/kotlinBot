@@ -20,7 +20,7 @@ object Parser17Track : Parser {
     private val log = LogManager.getLogger(Parser17Track::class.java)
     private val gson = Gson()
     override suspend fun getTrack(id: String): Track? {
-        log.info("[getTrack]: $id")
+        log.debug("[getTrack]: $id")
         val json = createCall(id)
         log.debug("call result: $json")
         if (!json.isEmpty()) {
@@ -32,7 +32,7 @@ object Parser17Track : Parser {
                 val track = Track()
                 track.parserCode = this.getCode()
                 track.id = id
-                track.last_check = LocalDateTime.now().toString()
+                track.last_modify = LocalDateTime.now().toString()
                 track.time = track17?.dat?.get(0)?.track?.ylt1 ?: ""
                 track.status = track17?.dat?.get(0)?.track?.z0?.z ?: ""
                 track.text = track17?.dat?.get(0)?.track?.z0?.c ?: ""

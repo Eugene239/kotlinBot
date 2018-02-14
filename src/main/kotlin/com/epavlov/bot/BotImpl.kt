@@ -18,11 +18,8 @@ import java.util.*
 
 /**
  * todo 18.01.2018
- *  -   add parsers
  *  -   add/delete info
- *  -   delete track
  *  -   schedule
- *     /help
  */
 object BotImpl : TelegramLongPollingBot() {
     private val log = LogManager.getLogger(BotImpl::class.java)
@@ -66,7 +63,6 @@ object BotImpl : TelegramLongPollingBot() {
 
     fun parseTextMessage(userId: Long, message: Message) {
         async {
-            log.debug("asyncTask threadsCount: ${Thread.activeCount()}")
             val user: UserBot? = UserDAO.get(userId)
             //checking is it command, then parse command
             if (isDefaultCommand(userId, user, message)) return@async
