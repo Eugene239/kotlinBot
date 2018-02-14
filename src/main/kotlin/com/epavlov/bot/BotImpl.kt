@@ -2,6 +2,7 @@ package com.epavlov.bot
 
 import com.epavlov.PropReader
 import com.epavlov.commands.CommandParser
+import com.epavlov.dao.ErrorDAO
 import com.epavlov.dao.TrackDAO
 import com.epavlov.dao.UserDAO
 import com.epavlov.entity.UserBot
@@ -83,6 +84,7 @@ object BotImpl : TelegramLongPollingBot() {
                 //finding track
                 StringWrapper.sendTracksToUser(userId, MainParser.findTrack(userId, message.text))
             } else {
+                ErrorDAO.save(userId,message.text)
                 sendStickertoUser(userId, cantUnderstand[random.nextInt(cantUnderstand.size)])
             }
         }

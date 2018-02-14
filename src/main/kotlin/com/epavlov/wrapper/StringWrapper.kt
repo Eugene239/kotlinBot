@@ -97,6 +97,9 @@ object StringWrapper {
         return keyboardMarkup
     }
 
+    /**
+     * todo refactor, add track id, to log error
+     */
     fun sendTracksToUser(userId: Long, listTrack: List<Track?>) {
         val result = listTrack.filter { it != null }
         log.info("[sendTracksToUser] got ${result.size} results")
