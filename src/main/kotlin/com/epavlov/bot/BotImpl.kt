@@ -19,7 +19,7 @@ import java.util.*
 /**
  * todo 18.01.2018
  *  -   add/delete info
- *  -   schedule
+ *  -   fix dbl loading
  */
 object BotImpl : TelegramLongPollingBot() {
     private val log = LogManager.getLogger(BotImpl::class.java)
@@ -106,6 +106,9 @@ object BotImpl : TelegramLongPollingBot() {
             "/start" -> {
                 greeting(id)
             }
+            "/help" ->{
+                sendMessageToUser(SendMessage(id, "Сейчас идет проверка новой версии бота, если что-то идет не так, просто напишите об этом в чате)"))
+            }
             else -> {
                 out = false
             }
@@ -117,6 +120,10 @@ object BotImpl : TelegramLongPollingBot() {
         try {
             sendMessage(send)
         } catch (e: Exception) {
+            if (e.message?.toLowerCase()?.contains(PropReader.getProperty("FORBIDDEN").toLowerCase()) == true){
+                user.isActive=false
+                UserDAO.save(user)
+            }
             log.error(user, e)
         }
     }

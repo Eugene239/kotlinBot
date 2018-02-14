@@ -6,11 +6,16 @@ import kotlinx.coroutines.experimental.runBlocking
 
 object ScheduleChecker {
 
-     fun checkTracks() {
-         launch {
-             TrackDAO.getList().filter { it.users.size > 0 && it.notFound < 10 }
-                     .forEach { TrackDAO.checkTrack(it) }
-         }
+    fun checkTracks() {
+        launch {
+            TrackDAO.getList().forEach {
+                if (it.users.size > 0 && it.notFound < 10) {
+                    TrackDAO.checkTrack(it)
+                } else {
+                    TrackDAO.remove(it.id!!)
+                }
+            }
+        }
     }
 
     @JvmStatic

@@ -58,7 +58,6 @@ object StringWrapper {
     /**
      * get Text track to User
      */
-    /*todo fix text output*/
     private fun getTextMessage(userBot: UserBot, track: Track): String {
         val name: String = userBot.trackList[track.id]?.name ?: ""
         if (!name.isEmpty()) {
