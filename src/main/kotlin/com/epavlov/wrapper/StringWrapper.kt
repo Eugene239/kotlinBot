@@ -79,19 +79,28 @@ object StringWrapper {
         BotImpl.sendMessageToUser(SendMessage(userId, trackId))
     }
 
+    /**
+     * todo modify dis
+     */
     private fun getTrackKeyboard(trackId: String?): InlineKeyboardMarkup {
         val keyboardMarkup = InlineKeyboardMarkup()
         trackId?.let {
             //get track id command
             val list = ArrayList<InlineKeyboardButton>()
             val getTrackId = InlineKeyboardButton().setText(PropReader.getProperty("getTrackId")).setCallbackData("${Command.GET_TRACK_ID}#$trackId")
-
             list.add(getTrackId)
-            keyboardMarkup.keyboard.add(list)
 
             val deleteList = ArrayList<InlineKeyboardButton>()
             val deleteButton  = InlineKeyboardButton().setText(PropReader.getProperty("DELETE_TRACK")).setCallbackData("${Command.DELETE}#$trackId")
             deleteList.add(deleteButton)
+
+            val descList = ArrayList<InlineKeyboardButton>()
+            val descButton = InlineKeyboardButton().setText(PropReader.getProperty("CHANGE_DESC")).setCallbackData("${Command.ADD_DESC}#$trackId")
+            descList.add(descButton)
+
+
+            keyboardMarkup.keyboard.add(list)
+            keyboardMarkup.keyboard.add(descList)
             keyboardMarkup.keyboard.add(deleteList)
         }
         return keyboardMarkup

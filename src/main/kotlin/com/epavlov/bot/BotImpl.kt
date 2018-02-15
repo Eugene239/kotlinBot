@@ -2,6 +2,7 @@ package com.epavlov.bot
 
 import com.epavlov.PropReader
 import com.epavlov.commands.CommandParser
+import com.epavlov.commands.desc.DescriptionHelper
 import com.epavlov.dao.ErrorDAO
 import com.epavlov.dao.TrackDAO
 import com.epavlov.dao.UserDAO
@@ -19,8 +20,8 @@ import java.util.*
 
 /**
  * todo 18.01.2018
- *  -   add/delete info
  *  -   fix dbl loading
+ *  -   check logs
  */
 object BotImpl : TelegramLongPollingBot() {
     private val log = LogManager.getLogger(BotImpl::class.java)
@@ -67,6 +68,11 @@ object BotImpl : TelegramLongPollingBot() {
             val user: UserBot? = UserDAO.get(userId)
             //checking is it command, then parse command
             if (isDefaultCommand(userId, user, message)) return@async
+            //checking is it message to desc
+            if (DescriptionHelper.isDesc(userId)){
+                DescriptionHelper.saveDesc(userId,message.text)
+                return@async
+            }
             if (MainParser.checkTrack(message.text)) {
                 //user already had this track
                 if (UserDAO.containTrack(userId, message.text)) {

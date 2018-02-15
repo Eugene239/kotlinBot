@@ -2,6 +2,7 @@ package com.epavlov.commands
 
 import com.epavlov.PropReader
 import com.epavlov.bot.BotImpl
+import com.epavlov.commands.desc.DescriptionHelper
 import com.epavlov.dao.TrackDAO
 import com.epavlov.dao.UserDAO
 import com.epavlov.parsers.MainParser
@@ -41,6 +42,10 @@ object CommandParser{
                 log.debug("$command $value")
                 UserDAO.deleteTrack(callback.from.id.toLong(),value)
                 BotImpl.sendMessageToUser(SendMessage(callback.from.id.toLong(),PropReader.getProperty("TRACK_DELETED").replace("###",value)))
+            }
+            Command.ADD_DESC->{
+                log.debug("$command $value")
+                DescriptionHelper.addToMap(callback.from.id.toLong(),value)
             }
         }
     }
