@@ -69,8 +69,8 @@ object BotImpl : TelegramLongPollingBot() {
             //checking is it command, then parse command
             if (isDefaultCommand(userId, user, message)) return@async
             //checking is it message to desc
-            if (DescriptionHelper.isDesc(userId)){
-                DescriptionHelper.saveDesc(userId,message.text)
+            if (DescriptionHelper.isDesc(userId)) {
+                DescriptionHelper.saveDesc(userId, message.text)
                 return@async
             }
             if (MainParser.checkTrack(message.text)) {
@@ -90,7 +90,7 @@ object BotImpl : TelegramLongPollingBot() {
                 //finding track
                 StringWrapper.sendTracksToUser(userId, MainParser.findTrack(userId, message.text))
             } else {
-                ErrorDAO.save(userId,message.text)
+                ErrorDAO.save(userId, message.text)
                 sendStickertoUser(userId, cantUnderstand[random.nextInt(cantUnderstand.size)])
             }
         }
@@ -114,7 +114,7 @@ object BotImpl : TelegramLongPollingBot() {
             "/start" -> {
                 greeting(id)
             }
-            "/help" ->{
+            "/help" -> {
                 sendMessageToUser(SendMessage(id, "Сейчас идет проверка новой версии бота, если что-то идет не так, просто напишите об этом в чате)"))
             }
             else -> {
@@ -128,11 +128,12 @@ object BotImpl : TelegramLongPollingBot() {
         try {
             sendMessage(send)
         } catch (e: Exception) {
-            if (e.message?.toLowerCase()?.contains(PropReader.getProperty("FORBIDDEN").toLowerCase()) == true){
-                user.isActive=false
+            if (e.message?.toLowerCase()?.contains(PropReader.getProperty("FORBIDDEN").toLowerCase()) == true) {
+                user.isActive = false
                 UserDAO.save(user)
-            }
-            log.error(user, e)
+                log.info("[DELETED] $user")
+            } else
+                log.error(user, e)
         }
     }
 

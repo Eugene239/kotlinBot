@@ -27,6 +27,7 @@ object UserDAO{
                 newUserCall(newUser)
             } else {
                 userBot.lastMessageTime = LocalDateTime.now().toString()
+                userBot.isActive=true
                 UserRepository.save(userBot)
             }
         }
