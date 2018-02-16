@@ -26,10 +26,10 @@ object DescriptionHelper {
         if (isDesc(userId)) {
             val trackId = userIdTrackIdmap[userId]
             launch {
+                userIdTrackIdmap.remove(userId)
                 val user = UserDAO.get(userId)
                 user?.trackList!![trackId]?.let {
                     it.name = text
-                    userIdTrackIdmap.remove(userId)
                     UserDAO.save(user)
                     BotImpl.sendMessageToUser(SendMessage(userId,PropReader.getProperty("DESC_CHANGED")))
                 }

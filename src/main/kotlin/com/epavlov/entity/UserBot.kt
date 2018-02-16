@@ -1,6 +1,5 @@
 package com.epavlov.entity
 
-import com.google.firebase.database.Exclude
 import org.telegram.telegrambots.api.objects.User
 import java.time.LocalDateTime
 import java.util.*
@@ -16,8 +15,7 @@ class UserBot {
     var lastMessageTime: String? = null
 
 
-    val fio: String?
-        @Exclude get() = "${first_name ?: ""} ${user_name ?: ""} ${last_name ?: ""}".trim().plus(" $id").replace("  ", " ")
+    var fio: String? = "${first_name ?: ""} ${user_name ?: ""} ${last_name ?: ""}".trim().plus(" $id").replace("  ", " ")
 
 
     var trackList: HashMap<String, UserTrack> = HashMap()

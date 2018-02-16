@@ -1,6 +1,7 @@
 package com.epavlov.shedule
 
 import com.epavlov.dao.TrackDAO
+import com.epavlov.dao.UserDAO
 import kotlinx.coroutines.experimental.launch
 import kotlinx.coroutines.experimental.runBlocking
 
@@ -8,11 +9,19 @@ object ScheduleChecker {
 
     fun checkTracks() {
         launch {
-            TrackDAO.getList().forEach {
-                if (it.users.size > 0 && it.notFound < 10) {
-                    TrackDAO.checkTrack(it)
+            TrackDAO.getList().forEach {track->
+                if (track.users.size > 0 && track.notFound < 10) {
+                    TrackDAO.checkTrack(track)
                 } else {
-                    TrackDAO.remove(it.id!!)
+                    if (track.users.size == 0) {
+                        TrackDAO.remove(track.id!!)
+                        return@launch
+                    }
+                    if (track.notFound > 10) {
+                        track.users.values.forEach { userId ->
+                            UserDAO.deleteTrack(userId,track.id!!)
+                        }
+                    }
                 }
             }
         }
