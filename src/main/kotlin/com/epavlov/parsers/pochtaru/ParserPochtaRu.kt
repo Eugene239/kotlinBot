@@ -13,6 +13,9 @@ import org.apache.log4j.LogManager
 import org.json.JSONObject
 import java.time.LocalDateTime
 
+/*
+    todo add trackPochta 2 parser
+ */
 object ParserPochtaRu : Parser {
     private val log = LogManager.getLogger(ParserPochtaRu::class.java)
     private const val url="https://www.pochta.ru/tracking?p_p_id=trackingPortlet_WAR_portalportlet&p_p_lifecycle=2&p_p_state=normal&p_p_mode=view&p_p_resource_id=getList&p_p_cacheability=cacheLevelPage&p_p_col_id=column-1&p_p_col_pos=1&p_p_col_count=2&barcodeList="
@@ -52,6 +55,10 @@ object ParserPochtaRu : Parser {
         }
     }
 
+    private fun getTrack1Type(){
+
+    }
+
     override fun getName(): String {
         return "Pochta.ru"
     }
@@ -70,17 +77,9 @@ object ParserPochtaRu : Parser {
     @JvmStatic
     fun main(args: Array<String>) {
         runBlocking {
-            println(getTrack("RM941563487CN"))
-            println()
-            println(getTrack("RG719414992CN"))
+            println(getTrack("12161520001375"))
             println()
             println(getTrack("RA409014833FI"))
-            println()
-            println(getTrack("ZA277410909HK"))
-            println()
-            println(getTrack("RO577525516CN"))
-            println()
-            println(getTrack("06855536055"))
             println()
         }
     }

@@ -67,6 +67,7 @@ object TrackDAO {
                     track.status=newTrack.status
                     track.text=newTrack.text
                     track.time=newTrack.time
+                    track.notFound=0
                     TrackDAO.save(track)
 
                     track.users.values.forEach{

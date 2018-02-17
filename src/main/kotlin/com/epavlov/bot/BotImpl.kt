@@ -20,7 +20,6 @@ import java.util.*
 
 /**
  * todo 18.01.2018
- *  -   fix dbl loading
  *  -   check logs
  */
 object BotImpl : TelegramLongPollingBot() {
@@ -88,7 +87,7 @@ object BotImpl : TelegramLongPollingBot() {
                     return@async
                 }
                 //finding track
-                StringWrapper.sendTracksToUser(userId, MainParser.findTrack(userId, message.text))
+                StringWrapper.sendTracksToUser(userId, MainParser.findTrack(userId, message.text),message.text)
             } else {
                 ErrorDAO.save(userId, message.text)
                 sendStickertoUser(userId, cantUnderstand[random.nextInt(cantUnderstand.size)])

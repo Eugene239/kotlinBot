@@ -3,9 +3,11 @@ package com.epavlov.wrapper
 import com.epavlov.PropReader
 import com.epavlov.bot.BotImpl
 import com.epavlov.commands.Command
+import com.epavlov.entity.ErrorMessage
 import com.epavlov.entity.Track
 import com.epavlov.entity.UserBot
 import com.epavlov.parsers.MainParser
+import com.epavlov.repository.ErrorMessageRepository
 import org.apache.log4j.LogManager
 import org.telegram.telegrambots.api.methods.send.SendMessage
 import org.telegram.telegrambots.api.objects.replykeyboard.InlineKeyboardMarkup
@@ -109,10 +111,11 @@ object StringWrapper {
     /**
      * todo refactor, add track id, to log error
      */
-    fun sendTracksToUser(userId: Long, listTrack: List<Track?>) {
+    fun sendTracksToUser(userId: Long, listTrack: List<Track?>,trackId:String) {
         val result = listTrack.filter { it != null }
         log.info("[sendTracksToUser] got ${result.size} results")
         if (result.isEmpty()) {
+            ErrorMessageRepository.save(ErrorMessage(userId,trackId))
             BotImpl.sendMessageToUser(SendMessage(userId, PropReader.getProperty("NOT_FOUND")))
             return
         }
