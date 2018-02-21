@@ -114,7 +114,7 @@ object BotImpl : TelegramLongPollingBot() {
                 greeting(id)
             }
             "/help" -> {
-                sendMessageToUser(SendMessage(id, "Сейчас идет проверка новой версии бота, если что-то идет не так, просто напишите об этом в чате)"))
+                sendMessageToUser(SendMessage(id, PropReader.getProperty("HELP")))
             }
             else -> {
                 out = false

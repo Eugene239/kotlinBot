@@ -8,6 +8,7 @@ import com.epavlov.entity.Track
 import com.epavlov.entity.UserBot
 import com.epavlov.parsers.MainParser
 import com.epavlov.repository.ErrorMessageRepository
+import kotlinx.coroutines.experimental.runBlocking
 import org.apache.log4j.LogManager
 import org.telegram.telegrambots.api.methods.send.SendMessage
 import org.telegram.telegrambots.api.objects.replykeyboard.InlineKeyboardMarkup
@@ -52,7 +53,7 @@ object StringWrapper {
         userBot?.let {
 
             //UserDAO.deleteTrack(userBot)
-            BotImpl.sendMessageToUser(SendMessage(userBot.id,PropReader.getProperty("NOT_FOUND")))
+            BotImpl.sendMessageToUser(SendMessage(userBot.id, PropReader.getProperty("NOT_FOUND")))
         }
 
     }
@@ -67,13 +68,13 @@ object StringWrapper {
                     "${userBot.trackList[track.id]?.name}\n\n" +
                     "Статус: ${track.status ?: ""}\n\n" +
                     "${track.text ?: ""}\n\n" +
-                    "Проверен: ${track.last_modify}\n"+
+                    "Проверен: ${track.last_modify}\n" +
                     "Парсер ${MainParser.getParserName(track.parserCode)}"
         }
         return "${track.id}\n\n" +
                 "Статус: ${track.status ?: ""}\n\n" +
                 "${track.text ?: ""}\n\n" +
-                "Проверен: ${track.last_modify}\n"+
+                "Проверен: ${track.last_modify}\n" +
                 "Парсер ${MainParser.getParserName(track.parserCode)}"
     }
 
@@ -93,7 +94,7 @@ object StringWrapper {
             list.add(getTrackId)
 
             val deleteList = ArrayList<InlineKeyboardButton>()
-            val deleteButton  = InlineKeyboardButton().setText(PropReader.getProperty("DELETE_TRACK")).setCallbackData("${Command.DELETE}#$trackId")
+            val deleteButton = InlineKeyboardButton().setText(PropReader.getProperty("DELETE_TRACK")).setCallbackData("${Command.DELETE}#$trackId")
             deleteList.add(deleteButton)
 
             val descList = ArrayList<InlineKeyboardButton>()
@@ -111,11 +112,11 @@ object StringWrapper {
     /**
      * todo refactor, add track id, to log error
      */
-    fun sendTracksToUser(userId: Long, listTrack: List<Track?>,trackId:String) {
+    fun sendTracksToUser(userId: Long, listTrack: List<Track?>, trackId: String) {
         val result = listTrack.filter { it != null }
         log.info("[sendTracksToUser] got ${result.size} results")
         if (result.isEmpty()) {
-            ErrorMessageRepository.save(ErrorMessage(userId,trackId))
+            ErrorMessageRepository.save(ErrorMessage(userId, trackId))
             BotImpl.sendMessageToUser(SendMessage(userId, PropReader.getProperty("NOT_FOUND")))
             return
         }
@@ -125,12 +126,19 @@ object StringWrapper {
             it.let {
                 val list = ArrayList<InlineKeyboardButton>()
                 val btnData = "${Command.POST}#{\"id\":\"${it?.id}\",\"parserCode\":\"${it?.parserCode}\"}"
-               // log.debug(btnData)
+                // log.debug(btnData)
                 val btn = InlineKeyboardButton().setText(MainParser.getParserName(it!!.parserCode)).setCallbackData(btnData)
                 list.add(btn)
                 keyboardMarkup.keyboard.add(list)
             }
         }
         BotImpl.sendMessageToUser(SendMessage(userId, PropReader.getProperty("CHOOSE_PARSER")).setReplyMarkup(keyboardMarkup))
+    }
+
+    @JvmStatic
+    fun main(args: Array<String>) {
+        runBlocking {
+            sendTracksToUser(189204145, MainParser.findTrack(189204145, "12161520001375"), "12161520001375")
+        }
     }
 }
